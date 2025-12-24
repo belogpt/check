@@ -25,6 +25,15 @@ class ItemBase(BaseModel):
         return round(value, 2)
 
 
+class ParsedOcrItem(BaseModel):
+    name: str
+    price: float
+    quantity: int
+    total: float
+    is_promo: bool = False
+    parse_error: bool = False
+
+
 class ItemSchema(ItemBase):
     id: uuid.UUID
 
@@ -116,7 +125,7 @@ class ReceiptUploadResponse(BaseModel):
 
 class OcrPreviewResponse(BaseModel):
     ocr_text: str
-    items: list[ItemBase]
+    items: list[ParsedOcrItem]
 
 
 class HealthResponse(BaseModel):
