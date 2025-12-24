@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+env/
+build/
+dist/
+.mypy_cache/
+.pytest_cache/
+media/
+/data/
+db_data/
+media_data/
+.DS_Store
+alembic/versions/__pycache__/

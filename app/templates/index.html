@@ -1,0 +1,14 @@
+{% set body_class = "page-index" %}
+{% extends "base.html" %}
+{% block content %}
+<section class="upload-area">
+  <form id="upload-form" enctype="multipart/form-data">
+    <p>Загрузите фото чека (JPG / PNG / WEBP) до 20 МБ</p>
+    <input type="file" name="file" accept="image/*" required />
+    <div style="margin-top: 12px;">
+      <button type="submit">Распознать чек</button>
+    </div>
+  </form>
+  <div id="status"></div>
+</section>
+{% endblock %}

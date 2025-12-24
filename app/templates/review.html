@@ -1,0 +1,28 @@
+{% set body_class = "page-review" %}
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>Проверьте позиции</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>Количество</th>
+        <th>Цена</th>
+        <th>Сумма</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="items-body"></tbody>
+  </table>
+  <div style="display: flex; gap: 8px; margin-top: 12px;">
+    <button id="add-row" type="button" class="secondary">Добавить позицию</button>
+    <button id="save-items" type="button">Сохранить</button>
+    <button id="publish-receipt" type="button">Подтвердить чек</button>
+  </div>
+  <div id="message"></div>
+</section>
+{% endblock %}
+{% block extra_body %}
+<script>document.body.dataset.receipt = "{{ receipt_id }}";</script>
+{% endblock %}
