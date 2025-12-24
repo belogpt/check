@@ -55,6 +55,17 @@ docker compose up -d --build
 - При старте контейнера автоматически выполняется `alembic upgrade head`, затем запускается Gunicorn+Uvicorn workers.
 - Данные БД сохраняются в volume `db_data`, медиа — в `media_data`.
 
+## Troubleshooting
+
+### `KeyError: 'ContainerConfig'` during `docker-compose up`
+
+The legacy `docker-compose` (Python, hyphenated) client can raise `KeyError: 'ContainerConfig'` when used with newer Docker Engine versions. Use the Compose V2 plugin instead:
+
+1. Verify you have Compose V2: `docker compose version` (note the space).
+2. If you only have the legacy binary, [install the Docker Compose plugin](https://docs.docker.com/compose/install/), or upgrade Docker to a version that ships it by default.
+3. Clean up any previously created containers/volumes after upgrading: `docker compose down --volumes --remove-orphans`.
+4. Rebuild and start the stack again: `docker compose up -d --build`.
+
 ## Резервное копирование и обновления
 
 - Бэкап БД: `docker compose exec db pg_dump -U postgres receipt > backup.sql`
