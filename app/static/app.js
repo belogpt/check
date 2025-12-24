@@ -19,11 +19,12 @@ async function postReceipt(form) {
       body: formData,
     });
     if (!response.ok) {
+      const responseClone = response.clone();
       let detail;
       try {
         detail = await response.json();
       } catch {
-        detail = await response.text();
+        detail = await responseClone.text();
       }
       console.error("[upload] Сервер вернул ошибку", {
         status: response.status,
