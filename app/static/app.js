@@ -2,21 +2,44 @@ async function postReceipt(form) {
   const statusBox = document.getElementById("status");
   statusBox.textContent = "Распознаём чек...";
   const formData = new FormData(form);
+  const fileInput = form.querySelector('input[type="file"]');
+  const selectedFile = fileInput?.files?.[0];
+  if (selectedFile) {
+    console.info("[upload] Отправляем файл чека", {
+      name: selectedFile.name,
+      size: `${selectedFile.size} bytes`,
+      type: selectedFile.type,
+    });
+  } else {
+    console.warn("[upload] Файл не выбран перед отправкой");
+  }
   try {
     const response = await fetch("/api/receipts", {
       method: "POST",
       body: formData,
     });
     if (!response.ok) {
+      let detail;
+      try {
+        detail = await response.json();
+      } catch {
+        detail = await response.text();
+      }
+      console.error("[upload] Сервер вернул ошибку", {
+        status: response.status,
+        statusText: response.statusText,
+        detail,
+      });
       statusBox.textContent = "Ошибка загрузки чека";
       return;
     }
     const data = await response.json();
+    console.info("[upload] Чек успешно загружен", { receiptId: data.receipt_id });
     statusBox.textContent = "Готово! Перенаправляем на проверку...";
     window.location.href = `/review/${data.receipt_id}`;
   } catch (err) {
+    console.error("[upload] Не удалось отправить чек", err);
     statusBox.textContent = "Не удалось отправить чек";
-    console.error(err);
   }
 }
 
@@ -241,4 +264,3 @@ document.addEventListener("DOMContentLoaded", () => {
     initRoomPage();
   }
 });
-
