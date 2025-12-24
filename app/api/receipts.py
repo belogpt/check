@@ -1,9 +1,11 @@
+import logging
 import secrets
 import uuid
 from decimal import Decimal
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
+from pytesseract import TesseractNotFoundError
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,6 +27,7 @@ from app.services.payments import PaymentError, process_payment_lines
 
 router = APIRouter(prefix="/api")
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/receipts", response_model=ReceiptUploadResponse)
@@ -42,7 +45,17 @@ async def upload_receipt(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     media_root = Path(settings.media_root)
-    path, parsed_items = await extract_items(file, media_root=media_root)
+    try:
+        path, parsed_items = await extract_items(file, media_root=media_root)
+    except TesseractNotFoundError as exc:
+        logger.exception("Tesseract is not installed or not configured")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OCR недоступен: отсутствует бинарник Tesseract",
+        ) from exc
+    except Exception as exc:  # pragma: no cover - safety net for unexpected OCR failures
+        logger.exception("Failed to process uploaded receipt image")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Не удалось обработать чек") from exc
     receipt = Receipt(image_path=str(path), status=ReceiptStatus.draft)
     session.add(receipt)
     await session.flush()
