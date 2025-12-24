@@ -18,6 +18,7 @@ from app.schemas import (
     ItemSchema,
     ItemUpdate,
     OcrPreviewResponse,
+    ParsedOcrItem,
     PaymentRequest,
     ReceiptRoomResponse,
     ReceiptUploadResponse,
@@ -43,7 +44,7 @@ def _validate_upload(file: UploadFile) -> int:
     return size
 
 
-async def _run_ocr(file: UploadFile, media_root: Path) -> tuple[Path, str, list]:
+async def _run_ocr(file: UploadFile, media_root: Path) -> tuple[Path, str, list[ParsedOcrItem]]:
     try:
         return await extract_items(file, media_root=media_root)
     except TesseractNotFoundError as exc:
@@ -104,12 +105,13 @@ async def upload_receipt(
     await session.flush()
     items: list[ReceiptItem] = []
     for parsed in parsed_items:
+        name = parsed.name or "Без названия"
         item = ReceiptItem(
             receipt_id=receipt.id,
-            name=parsed.name,
-            qty_total=parsed.qty_total,
-            unit_price=parsed.unit_price,
-            amount_total=parsed.amount_total,
+            name=name,
+            qty_total=parsed.quantity,
+            unit_price=parsed.price,
+            amount_total=parsed.total,
         )
         session.add(item)
         items.append(item)
