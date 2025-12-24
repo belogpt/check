@@ -5,7 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
-from pytesseract import TesseractNotFoundError
+from pytesseract import TesseractError, TesseractNotFoundError
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -52,6 +52,12 @@ async def upload_receipt(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="OCR недоступен: отсутствует бинарник Tesseract",
+        ) from exc
+    except TesseractError as exc:
+        logger.exception("Tesseract failed to process the image")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OCR недоступен: отсутствуют языковые данные Tesseract",
         ) from exc
     except Exception as exc:  # pragma: no cover - safety net for unexpected OCR failures
         logger.exception("Failed to process uploaded receipt image")
