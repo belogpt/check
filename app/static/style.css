@@ -1,0 +1,101 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f6f6f6;
+}
+
+header,
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+section {
+  background: #fff;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+}
+
+button {
+  padding: 8px 12px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #64748b;
+}
+
+button.danger {
+  background: #ef4444;
+}
+
+.upload-area {
+  border: 2px dashed #cbd5e1;
+  padding: 32px;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+}
+
+#status,
+#message {
+  margin-top: 8px;
+  color: #0ea5e9;
+}
+
+.units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.unit-btn {
+  background: #e5e7eb;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.unit-btn[data-status="paid"] {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+.unit-btn[data-status="partial"] {
+  background: #fef9c3;
+  border-color: #facc15;
+}
+
+#payments {
+  list-style: none;
+  padding: 0;
+}
+
+#payments li {
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+

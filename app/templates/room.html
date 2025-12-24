@@ -1,0 +1,18 @@
+{% set body_class = "page-room" %}
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>Комната оплаты</h2>
+  <div style="margin-bottom: 12px;">
+    <label>Ваше имя: <input id="payer-name" type="text" placeholder="Гость" /></label>
+  </div>
+  <div id="room"></div>
+  <div>
+    <h3>Платежи</h3>
+    <ul id="payments"></ul>
+  </div>
+</section>
+{% endblock %}
+{% block extra_body %}
+<script>document.body.dataset.token = "{{ token }}";</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title or "Receipt Splitter" }}</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body class="{{ body_class }}">
+    <header>
+      <h1>{{ title or "Receipt Splitter" }}</h1>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <script src="/static/app.js"></script>
+    {% block extra_body %}{% endblock %}
+  </body>
+</html>
