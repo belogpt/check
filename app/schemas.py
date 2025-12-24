@@ -7,16 +7,6 @@ from pydantic import BaseModel, Field, validator
 from app.models import ReceiptStatus, UnitStatus
 
 
-class ReceiptUploadResponse(BaseModel):
-    receipt_id: uuid.UUID
-    items: list["ItemSchema"]
-
-
-class OcrPreviewResponse(BaseModel):
-    ocr_text: str
-    items: list["ItemBase"]
-
-
 class ItemBase(BaseModel):
     name: str
     qty_total: int = Field(..., gt=0)
@@ -44,10 +34,6 @@ class ItemSchema(ItemBase):
 
 class ItemUpdate(BaseModel):
     items: list[ItemBase]
-
-
-class FinalizeResponse(BaseModel):
-    room_url: str
 
 
 class ItemUnitSchema(BaseModel):
@@ -117,6 +103,20 @@ class PaymentLine(BaseModel):
 class PaymentRequest(BaseModel):
     payer_name: str
     lines: list[PaymentLine]
+
+
+class FinalizeResponse(BaseModel):
+    room_url: str
+
+
+class ReceiptUploadResponse(BaseModel):
+    receipt_id: uuid.UUID
+    items: list[ItemSchema]
+
+
+class OcrPreviewResponse(BaseModel):
+    ocr_text: str
+    items: list[ItemBase]
 
 
 class HealthResponse(BaseModel):
