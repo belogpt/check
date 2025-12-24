@@ -6,6 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     tesseract-ocr \
+    tesseract-ocr-rus \
     libtesseract-dev \
     libleptonica-dev \
     pkg-config \
@@ -24,4 +25,3 @@ USER appuser
 
 EXPOSE 8000
 CMD ["/bin/bash", "scripts/start.sh"]
-
