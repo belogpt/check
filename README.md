@@ -48,6 +48,7 @@ docker compose up -d --build
 - `POST /api/receipts/{id}/finalize` — создать комнату и токен.
 - `GET /api/receipts/{token}` — данные комнаты: позиции, юниты, платежи.
 - `POST /api/receipts/{token}/pay` — оплатить юнит полностью или частично.
+- `POST /api/receipts/preview` — распознать чек без сохранения в БД (отладка OCR).
 - `GET /health` — проверка готовности.
 
 ## Развёртывание

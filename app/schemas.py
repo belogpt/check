@@ -12,6 +12,11 @@ class ReceiptUploadResponse(BaseModel):
     items: list["ItemSchema"]
 
 
+class OcrPreviewResponse(BaseModel):
+    ocr_text: str
+    items: list["ItemBase"]
+
+
 class ItemBase(BaseModel):
     name: str
     qty_total: int = Field(..., gt=0)
@@ -125,4 +130,3 @@ class ReceiptListItem(BaseModel):
 
     class Config:
         orm_mode = True
-

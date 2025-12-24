@@ -33,6 +33,8 @@ def _deskew(image: np.ndarray) -> np.ndarray:
 
 def preprocess_image(path: Path) -> np.ndarray:
     image = cv2.imread(str(path))
+    if image is None:
+        raise ValueError(f"OpenCV failed to read image at {path}")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (3, 3), 0)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -91,10 +93,10 @@ async def save_upload(file: UploadFile, media_dir: Path) -> Path:
     return destination
 
 
-async def extract_items(file: UploadFile, media_root: Path) -> tuple[Path, list[ItemBase]]:
+async def extract_items(file: UploadFile, media_root: Path) -> tuple[Path, str, list[ItemBase]]:
     saved_path = await save_upload(file, media_root)
     processed = preprocess_image(saved_path)
     pytesseract.pytesseract.tesseract_cmd = settings.tesseract_cmd or pytesseract.pytesseract.tesseract_cmd
     text = pytesseract.image_to_string(processed, lang="rus+eng")
     items = parse_items(text)
-    return saved_path, items
+    return saved_path, text, items

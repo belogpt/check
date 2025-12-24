@@ -12,12 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import receipts as receipts_router
 from app.core.config import get_settings
+from app.core.logging_config import setup_logging
 from app.core.websocket_manager import manager
 from app.db import get_session
 from app.models import Receipt, ReceiptStatus
 from app.schemas import HealthResponse, ReceiptRoomResponse
 
 
+setup_logging()
 settings = get_settings()
 
 BASE_DIR = Path(__file__).resolve().parent
