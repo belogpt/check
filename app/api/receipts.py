@@ -17,6 +17,7 @@ from app.schemas import (
     FinalizeResponse,
     ItemSchema,
     ItemUpdate,
+    OcrPreviewResponse,
     PaymentRequest,
     ReceiptRoomResponse,
     ReceiptUploadResponse,
@@ -30,11 +31,7 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/receipts", response_model=ReceiptUploadResponse)
-async def upload_receipt(
-    file: UploadFile,
-    session: AsyncSession = Depends(get_session),
-) -> ReceiptUploadResponse:
+def _validate_upload(file: UploadFile) -> int:
     if not file.content_type or "image" not in file.content_type:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
     file.file.seek(0, 2)
@@ -43,10 +40,12 @@ async def upload_receipt(
     max_bytes = settings.upload_max_mb * 1024 * 1024
     if size > max_bytes:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
+    return size
 
-    media_root = Path(settings.media_root)
+
+async def _run_ocr(file: UploadFile, media_root: Path) -> tuple[Path, str, list]:
     try:
-        path, parsed_items = await extract_items(file, media_root=media_root)
+        return await extract_items(file, media_root=media_root)
     except TesseractNotFoundError as exc:
         logger.exception("Tesseract is not installed or not configured")
         raise HTTPException(
@@ -59,9 +58,47 @@ async def upload_receipt(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="OCR недоступен: отсутствуют языковые данные Tesseract",
         ) from exc
+    except ValueError as exc:
+        logger.warning("Invalid image data: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Не удалось прочитать изображение. Проверьте, что файл является изображением чека.",
+        ) from exc
     except Exception as exc:  # pragma: no cover - safety net for unexpected OCR failures
-        logger.exception("Failed to process uploaded receipt image")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Не удалось обработать чек") from exc
+        error_id = uuid.uuid4().hex[:8]
+        logger.exception("Failed to process uploaded receipt image (error_id=%s)", error_id)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Не удалось обработать чек (код {error_id})",
+        ) from exc
+
+
+@router.post("/receipts/preview", response_model=OcrPreviewResponse)
+async def preview_receipt(file: UploadFile) -> OcrPreviewResponse:
+    size = _validate_upload(file)
+    logger.info(
+        "Previewing receipt upload: filename=%s content_type=%s size_bytes=%s", file.filename, file.content_type, size
+    )
+    media_root = Path(settings.media_root)
+    path, text, parsed_items = await _run_ocr(file, media_root=media_root)
+    try:
+        return OcrPreviewResponse(ocr_text=text, items=parsed_items)
+    finally:
+        path.unlink(missing_ok=True)
+
+
+@router.post("/receipts", response_model=ReceiptUploadResponse)
+async def upload_receipt(
+    file: UploadFile,
+    session: AsyncSession = Depends(get_session),
+) -> ReceiptUploadResponse:
+    size = _validate_upload(file)
+    logger.info(
+        "Processing receipt upload: filename=%s content_type=%s size_bytes=%s", file.filename, file.content_type, size
+    )
+
+    media_root = Path(settings.media_root)
+    path, text, parsed_items = await _run_ocr(file, media_root=media_root)
     receipt = Receipt(image_path=str(path), status=ReceiptStatus.draft)
     session.add(receipt)
     await session.flush()
@@ -77,6 +114,12 @@ async def upload_receipt(
         session.add(item)
         items.append(item)
     await session.commit()
+    logger.info(
+        "Receipt %s saved with %d parsed items. First characters of OCR text: %s",
+        receipt.id,
+        len(items),
+        text[:120].replace("\n", "\\n"),
+    )
     return ReceiptUploadResponse(receipt_id=receipt.id, items=items)
 
 
